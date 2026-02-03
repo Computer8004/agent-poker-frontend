@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "heroku-postbuild": "npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "serve dist -p $PORT -s"
