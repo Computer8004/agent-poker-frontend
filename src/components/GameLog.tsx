@@ -1,22 +1,32 @@
-import type { GameLogEntry } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { History, Terminal } from 'lucide-react';
+
+interface GameLogEntry {
+  player: string;
+  action: string;
+  amount?: number;
+  timestamp: number;
+}
 
 interface GameLogProps {
   logs: GameLogEntry[];
 }
 
 export function GameLog({ logs }: GameLogProps) {
-  const getLogColor = (type: string) => {
-    switch (type) {
-      case 'action':
-        return 'text-primary';
-      case 'winner':
-        return 'text-yellow-500';
-      case 'system':
-        return 'text-muted-foreground';
+  const getActionIcon = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'fold':
+        return '❌';
+      case 'check':
+        return '✓';
+      case 'call':
+        return '📞';
+      case 'raise':
+        return '📈';
+      case 'all-in':
+        return '💰';
       default:
-        return 'text-foreground';
+        return '•';
     }
   };
 
@@ -38,9 +48,12 @@ export function GameLog({ logs }: GameLogProps) {
             logs.map((log, index) => (
               <div key={index} className="text-sm border-l-2 border-primary/30 pl-3 py-1">
                 <div className="text-xs text-muted-foreground mb-1">
-                  {new Date(log.timestamp).toLocaleTimeString()}
+                  {new Date(log.timestamp * 1000).toLocaleTimeString()}
                 </div>
-                <div className={getLogColor(log.type)}>{log.message}</div>
+                <div className="text-foreground">
+                  {getActionIcon(log.action)} {log.player.slice(0, 6)}...{log.player.slice(-4)} {log.action}
+                  {log.amount ? ` ${log.amount}` : ''}
+                </div>
               </div>
             ))
           )}

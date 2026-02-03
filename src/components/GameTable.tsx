@@ -11,12 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Play, Users, Coins, RefreshCw } from 'lucide-react';
 
 interface GameTableProps {
-  playerId: string;
-  sessionToken: string;
+  gameId: string;
+  playerAddress: string;
 }
 
-export function GameTable({ playerId, sessionToken }: GameTableProps) {
-  const { gameId } = useParams<{ gameId: string }>();
+export function GameTable({ gameId, playerAddress }: GameTableProps) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,7 +24,7 @@ export function GameTable({ playerId, sessionToken }: GameTableProps) {
     if (!gameId) return;
     
     try {
-      const response = await getGameState(gameId, sessionToken);
+      const response = await getGameState(gameId, playerAddress);
       setGameState(response.state);
       setError('');
     } catch (err) {
@@ -33,7 +32,7 @@ export function GameTable({ playerId, sessionToken }: GameTableProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [gameId, sessionToken]);
+  }, [gameId, playerAddress]);
 
   useEffect(() => {
     fetchGameState();
@@ -74,8 +73,8 @@ export function GameTable({ playerId, sessionToken }: GameTableProps) {
     );
   }
 
-  const currentPlayer = gameState.players.find(p => p.id === playerId);
-  const isHost = gameState.players[0]?.id === playerId;
+  const currentPlayer = gameState.players.find(p => p.address.toLowerCase() === playerAddress.toLowerCase());
+  const isHost = gameState.players[0]?.address.toLowerCase() === playerAddress.toLowerCase();
 
   const getPlayerPosition = (index: number, totalPlayers: number): 'top' | 'topLeft' | 'topRight' | 'left' | 'right' | 'bottomLeft' | 'bottomRight' | 'bottom' => {
     if (totalPlayers <= 2) {
@@ -163,12 +162,12 @@ export function GameTable({ playerId, sessionToken }: GameTableProps) {
         {/* Players */}
         {gameState.players.map((player, index) => (
           <PlayerSeat
-            key={player.id}
+            key={player.address}
             player={player}
-            isCurrentPlayer={player.id === playerId}
-            isCurrentTurn={player.id === gameState.current_player_id}
+            isCurrentPlayer={player.address.toLowerCase() === playerAddress.toLowerCase()}
+            isCurrentTurn={player.address.toLowerCase() === gameState.currentTurn?.toLowerCase()}
             position={getPlayerPosition(index, gameState.players.length)}
-            isDealer={index === gameState.dealer_position}
+            isDealer={index === gameState.dealerIndex}
           />
         ))}
       </div>
@@ -180,7 +179,7 @@ export function GameTable({ playerId, sessionToken }: GameTableProps) {
             <ActionPanel
               gameState={gameState}
               currentPlayer={currentPlayer}
-              sessionToken={sessionToken}
+              playerAddress={playerAddress}
               onActionPerformed={fetchGameState}
             />
           )}

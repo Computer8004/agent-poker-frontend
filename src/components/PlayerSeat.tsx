@@ -22,13 +22,16 @@ export function PlayerSeat({ player, isCurrentPlayer, isCurrentTurn, position, i
     bottom: 'absolute bottom-4 left-1/2 -translate-x-1/2',
   };
 
+  // Check if player is a bot (no real address)
+  const isBot = player.address.startsWith('0x0000') || player.name.toLowerCase().includes('bot');
+
   return (
     <div className={`${positionClasses[position]} flex flex-col items-center gap-2`}>
       <div
         className={`
           relative px-4 py-2 rounded-lg border-2 transition-all duration-300
           ${isCurrentTurn ? 'border-primary agent-glow bg-primary/10' : 'border-border bg-card/80'}
-          ${player.folded ? 'opacity-50' : 'opacity-100'}
+          ${player.hasFolded ? 'opacity-50' : 'opacity-100'}
         `}
       >
         {isDealer && (
@@ -38,7 +41,7 @@ export function PlayerSeat({ player, isCurrentPlayer, isCurrentTurn, position, i
         )}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-            {player.is_bot ? (
+            {isBot ? (
               <Bot className="w-4 h-4 text-muted-foreground" />
             ) : (
               <User className="w-4 h-4 text-primary" />
@@ -55,19 +58,19 @@ export function PlayerSeat({ player, isCurrentPlayer, isCurrentTurn, position, i
           </div>
         </div>
         
-        {player.bet > 0 && (
+        {player.currentBet > 0 && (
           <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black text-xs font-bold px-2 py-1 rounded-full">
-            {player.bet.toLocaleString()}
+            {player.currentBet.toLocaleString()}
           </div>
         )}
       </div>
 
-      {isCurrentPlayer && player.hole_cards && (
-        <CardHand cards={player.hole_cards} size="sm" />
+      {isCurrentPlayer && player.holeCards && (
+        <CardHand cards={player.holeCards} size="sm" />
       )}
       
-      {!isCurrentPlayer && player.hole_cards && (
-        <CardHand cards={player.hole_cards} hidden size="sm" />
+      {!isCurrentPlayer && player.holeCards && (
+        <CardHand cards={player.holeCards} hidden size="sm" />
       )}
     </div>
   );

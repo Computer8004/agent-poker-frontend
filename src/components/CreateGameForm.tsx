@@ -3,17 +3,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, Users, Coins, Bot } from 'lucide-react';
+import { UserPlus, Users, Coins } from 'lucide-react';
 import { createGame } from '@/api';
 
 interface CreateGameFormProps {
-  onGameCreated: (gameId: string, playerId: string, sessionToken: string) => void;
+  onGameCreated: (gameId: string, playerAddress: string) => void;
+  playerAddress: string;
 }
 
-export function CreateGameForm({ onGameCreated }: CreateGameFormProps) {
+export function CreateGameForm({ onGameCreated, playerAddress }: CreateGameFormProps) {
   const [playerName, setPlayerName] = useState('');
-  const [startingChips, setStartingChips] = useState(1000);
-  const [numBots, setNumBots] = useState(3);
+  const [smallBlind, setSmallBlind] = useState(10);
+  const [bigBlind, setBigBlind] = useState(20);
+  const [minBuyIn, setMinBuyIn] = useState(400);
+  const [maxBuyIn, setMaxBuyIn] = useState(2000);
+  const [maxPlayers, setMaxPlayers] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,8 +27,16 @@ export function CreateGameForm({ onGameCreated }: CreateGameFormProps) {
     setError('');
 
     try {
-      const response = await createGame(playerName, startingChips, numBots);
-      onGameCreated(response.gameId, response.playerId, response.sessionToken);
+      const response = await createGame(
+        playerAddress,
+        playerName,
+        smallBlind,
+        bigBlind,
+        minBuyIn,
+        maxBuyIn,
+        maxPlayers
+      );
+      onGameCreated(response.gameId.toString(), playerAddress);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create game');
     } finally {
@@ -57,35 +69,77 @@ export function CreateGameForm({ onGameCreated }: CreateGameFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="startingChips" className="flex items-center gap-2">
-              <Coins className="w-4 h-4" />
-              Starting Chips
-            </Label>
-            <Input
-              id="startingChips"
-              type="number"
-              min={100}
-              max={10000}
-              value={startingChips}
-              onChange={(e) => setStartingChips(Number(e.target.value))}
-              required
-              className="bg-secondary/50 border-primary/20 focus:border-primary"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="smallBlind" className="flex items-center gap-2">
+                <Coins className="w-4 h-4" />
+                Small Blind
+              </Label>
+              <Input
+                id="smallBlind"
+                type="number"
+                min={1}
+                value={smallBlind}
+                onChange={(e) => setSmallBlind(Number(e.target.value))}
+                required
+                className="bg-secondary/50 border-primary/20 focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bigBlind" className="flex items-center gap-2">
+                <Coins className="w-4 h-4" />
+                Big Blind
+              </Label>
+              <Input
+                id="bigBlind"
+                type="number"
+                min={2}
+                value={bigBlind}
+                onChange={(e) => setBigBlind(Number(e.target.value))}
+                required
+                className="bg-secondary/50 border-primary/20 focus:border-primary"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="minBuyIn">Min Buy-in</Label>
+              <Input
+                id="minBuyIn"
+                type="number"
+                min={20}
+                value={minBuyIn}
+                onChange={(e) => setMinBuyIn(Number(e.target.value))}
+                required
+                className="bg-secondary/50 border-primary/20 focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maxBuyIn">Max Buy-in</Label>
+              <Input
+                id="maxBuyIn"
+                type="number"
+                min={20}
+                value={maxBuyIn}
+                onChange={(e) => setMaxBuyIn(Number(e.target.value))}
+                required
+                className="bg-secondary/50 border-primary/20 focus:border-primary"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="numBots" className="flex items-center gap-2">
-              <Bot className="w-4 h-4" />
-              Number of Bot Agents
-            </Label>
+            <Label htmlFor="maxPlayers">Max Players</Label>
             <Input
-              id="numBots"
+              id="maxPlayers"
               type="number"
-              min={1}
-              max={8}
-              value={numBots}
-              onChange={(e) => setNumBots(Number(e.target.value))}
+              min={2}
+              max={9}
+              value={maxPlayers}
+              onChange={(e) => setMaxPlayers(Number(e.target.value))}
               required
               className="bg-secondary/50 border-primary/20 focus:border-primary"
             />

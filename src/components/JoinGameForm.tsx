@@ -7,10 +7,11 @@ import { LogIn, Users, Hash } from 'lucide-react';
 import { joinGame } from '@/api';
 
 interface JoinGameFormProps {
-  onGameJoined: (gameId: string, playerId: string, sessionToken: string) => void;
+  onGameJoined: (gameId: string, playerAddress: string) => void;
+  playerAddress: string;
 }
 
-export function JoinGameForm({ onGameJoined }: JoinGameFormProps) {
+export function JoinGameForm({ onGameJoined, playerAddress }: JoinGameFormProps) {
   const [gameId, setGameId] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,8 +23,8 @@ export function JoinGameForm({ onGameJoined }: JoinGameFormProps) {
     setError('');
 
     try {
-      const response = await joinGame(gameId, playerName);
-      onGameJoined(gameId, response.playerId, response.sessionToken);
+      await joinGame(gameId, playerAddress, playerName);
+      onGameJoined(gameId, playerAddress);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to join game');
     } finally {
@@ -69,6 +70,10 @@ export function JoinGameForm({ onGameJoined }: JoinGameFormProps) {
               required
               className="bg-secondary/50 border-accent/20 focus:border-accent"
             />
+          </div>
+
+          <div className="text-sm text-muted-foreground">
+            Wallet: {playerAddress.slice(0, 6)}...{playerAddress.slice(-4)}
           </div>
 
           {error && (

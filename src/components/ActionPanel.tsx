@@ -8,19 +8,19 @@ import { X, Check, Phone, TrendingUp, CircleDot } from 'lucide-react';
 interface ActionPanelProps {
   gameState: GameState;
   currentPlayer: Player;
-  sessionToken: string;
+  playerAddress: string;
   onActionPerformed: () => void;
 }
 
-export function ActionPanel({ gameState, currentPlayer, sessionToken, onActionPerformed }: ActionPanelProps) {
-  const [raiseAmount, setRaiseAmount] = useState(gameState.min_raise);
+export function ActionPanel({ gameState, currentPlayer, playerAddress, onActionPerformed }: ActionPanelProps) {
+  const [raiseAmount, setRaiseAmount] = useState(gameState.currentBet * 2);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const isMyTurn = gameState.current_player_id === currentPlayer.id;
-  const canCheck = gameState.current_bet === 0 || gameState.current_bet === currentPlayer.bet;
-  const callAmount = gameState.current_bet - currentPlayer.bet;
-  const canRaise = currentPlayer.chips > callAmount + gameState.min_raise;
+  const isMyTurn = gameState.currentTurn?.toLowerCase() === playerAddress.toLowerCase();
+  const canCheck = gameState.currentBet === 0 || gameState.currentBet === currentPlayer.currentBet;
+  const callAmount = gameState.currentBet - currentPlayer.currentBet;
+  const canRaise = currentPlayer.chips > callAmount + gameState.currentBet;
   const canAllIn = currentPlayer.chips > 0;
 
   const handleAction = async (action: 'fold' | 'check' | 'call' | 'raise' | 'all-in', amount?: number) => {
@@ -28,7 +28,7 @@ export function ActionPanel({ gameState, currentPlayer, sessionToken, onActionPe
     setError('');
 
     try {
-      await performAction(gameState.id, sessionToken, action, amount);
+      await performAction(gameState.id.toString(), playerAddress, action, amount);
       onActionPerformed();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Action failed');
@@ -100,7 +100,7 @@ export function ActionPanel({ gameState, currentPlayer, sessionToken, onActionPe
           </Button>
           <Input
             type="number"
-            min={gameState.min_raise}
+            min={gameState.currentBet * 2}
             max={currentPlayer.chips}
             value={raiseAmount}
             onChange={(e) => setRaiseAmount(Number(e.target.value))}

@@ -1,13 +1,25 @@
 import { API_BASE_URL } from '@/types';
 
-export async function createGame(playerName: string, startingChips: number, numBots: number) {
+export async function createGame(
+  playerAddress: string,
+  playerName: string,
+  smallBlind: number,
+  bigBlind: number,
+  minBuyIn: number,
+  maxBuyIn: number,
+  maxPlayers: number
+) {
   const response = await fetch(`${API_BASE_URL}/api/games`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      playerAddress,
       playerName,
-      startingChips,
-      numBots,
+      smallBlind,
+      bigBlind,
+      minBuyIn,
+      maxBuyIn,
+      maxPlayers,
     }),
   });
 
@@ -19,11 +31,11 @@ export async function createGame(playerName: string, startingChips: number, numB
   return response.json();
 }
 
-export async function joinGame(gameId: string, playerName: string) {
+export async function joinGame(gameId: string, playerAddress: string, playerName: string) {
   const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ gameId, playerName }),
+    body: JSON.stringify({ playerAddress, playerName }),
   });
 
   if (!response.ok) {
@@ -34,12 +46,8 @@ export async function joinGame(gameId: string, playerName: string) {
   return response.json();
 }
 
-export async function getGameState(gameId: string, sessionToken: string) {
-  const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/state`, {
-    headers: {
-      'Authorization': `Bearer ${sessionToken}`,
-    },
-  });
+export async function getGameState(gameId: string, playerAddress: string) {
+  const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/state?playerAddress=${playerAddress}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -50,41 +58,29 @@ export async function getGameState(gameId: string, sessionToken: string) {
 }
 
 export async function getPublicGameState(gameId: string) {
-  const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/public`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to get public game state');
-  }
-
-  return response.json();
+  // Server doesn't have this endpoint - we'll use regular state for now
+  return getGameState(gameId, '0x0000000000000000000000000000000000000000');
 }
 
 export async function getTables() {
-  const response = await fetch(`${API_BASE_URL}/api/tables`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to get tables');
-  }
-
-  return response.json();
+  // Server doesn't have this endpoint yet - return empty array for now
+  return { tables: [] };
 }
 
 export async function performAction(
   gameId: string,
-  sessionToken: string,
-  actionType: 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'all-in',
+  playerAddress: string,
+  actionType: 'fold' | 'check' | 'call' | 'raise' | 'all-in',
   amount?: number
 ) {
   const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/action`, {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${sessionToken}`,
     },
     body: JSON.stringify({
-      type: actionType,
+      playerAddress,
+      action: actionType,
       amount,
     }),
   });

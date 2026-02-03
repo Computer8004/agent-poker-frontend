@@ -6,60 +6,65 @@ export interface Card {
 }
 
 export interface Player {
-  id: string;
+  address: string;
   name: string;
   chips: number;
-  bet: number;
-  folded: boolean;
-  is_bot: boolean;
-  hole_cards?: Card[];
-  is_active: boolean;
+  currentBet: number;
+  hasFolded: boolean;
+  holeCards?: Card[];
 }
 
 export interface GameState {
-  id: string;
+  id: number;
   status: 'waiting' | 'active' | 'finished';
-  phase: 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-  community_cards: Card[];
+  phase: 'waiting' | 'pre-flop' | 'flop' | 'turn' | 'river' | 'showdown' | 'finished';
+  communityCards: Card[];
   pot: number;
-  current_bet: number;
-  current_player_id: string | null;
-  dealer_position: number;
-  small_blind: number;
-  big_blind: number;
+  currentBet: number;
+  currentTurn: string | null;
+  dealerIndex: number;
+  smallBlind: number;
+  bigBlind: number;
   players: Player[];
-  history: GameLogEntry[];
-  min_raise: number;
-}
-
-export interface GameLogEntry {
-  timestamp: string;
-  message: string;
-  type: 'action' | 'system' | 'winner';
+  actionHistory: Array<{
+    player: string;
+    action: string;
+    amount?: number;
+    timestamp: number;
+  }>;
 }
 
 export interface CreateGameRequest {
-  player_name: string;
-  starting_chips: number;
-  num_bots: number;
+  playerAddress: string;
+  playerName: string;
+  smallBlind: number;
+  bigBlind: number;
+  minBuyIn: number;
+  maxBuyIn: number;
+  maxPlayers: number;
 }
 
 export interface CreateGameResponse {
-  game_id: string;
-  player_id: string;
+  success: boolean;
+  gameId: number;
+  message: string;
 }
 
 export interface JoinGameRequest {
-  game_id: string;
-  player_name: string;
+  playerAddress: string;
+  playerName: string;
 }
 
 export interface JoinGameResponse {
-  player_id: string;
+  success: boolean;
+  gameId: number;
+  playerCount: number;
+  maxPlayers: number;
 }
 
 export interface ActionRequest {
-  action: 'fold' | 'check' | 'call' | 'raise' | 'all_in';
+  playerAddress: string;
+  action: 'fold' | 'check' | 'call' | 'raise' | 'all-in';
   amount?: number;
 }
 
@@ -89,8 +94,8 @@ export const RANK_DISPLAY: Record<string, string> = {
   '8': '8',
   '9': '9',
   '10': '10',
-  'jack': 'J',
-  'queen': 'Q',
-  'king': 'K',
-  'ace': 'A',
+  'J': 'J',
+  'Q': 'Q',
+  'K': 'K',
+  'A': 'A',
 };
