@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from '@/components/LandingPage';
-import { GameTable } from '@/components/GameTable';
+import { GameTable3D } from '@/components/GameTable3D';
 import { useAccount } from 'wagmi';
 import './App.css';
 
@@ -54,9 +54,9 @@ function App() {
           path="/game/:gameId"
           element={
             gameSession && isConnected && address ? (
-              <GameTable 
-                gameId={gameSession.gameId} 
-                playerAddress={address} 
+              <GameTable3D
+                gameId={gameSession.gameId}
+                playerAddress={address}
               />
             ) : (
               <Navigate to="/" replace />
