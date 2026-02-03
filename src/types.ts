@@ -63,7 +63,7 @@ export interface ActionRequest {
   amount?: number;
 }
 
-export const API_BASE_URL = 'https://pure-growth-production.up.railway.app';
+export const API_BASE_URL = 'https://agent-poker-server-production.up.railway.app';
 
 export const SUIT_SYMBOLS: Record<string, string> = {
   hearts: '♥',
