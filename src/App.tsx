@@ -2,35 +2,36 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from '@/components/LandingPage';
 import { GameTable } from '@/components/GameTable';
+import { useAccount } from 'wagmi';
 import './App.css';
 
 function App() {
   const [gameSession, setGameSession] = useState<{ gameId: string; playerAddress: string } | null>(null);
-  const [playerAddress, setPlayerAddress] = useState<string>('');
+  const { address, isConnected } = useAccount();
 
+  // Restore game session from localStorage
   useEffect(() => {
-    // Check if wallet was previously connected
-    const savedAddress = localStorage.getItem('playerAddress');
-    if (savedAddress) {
-      setPlayerAddress(savedAddress);
+    const saved = localStorage.getItem('gameSession');
+    if (saved) {
+      setGameSession(JSON.parse(saved));
     }
   }, []);
 
-  const handleConnectWallet = async () => {
-    // For now, use a prompt. In production, this would use MetaMask or other wallet
-    const address = prompt('Enter your wallet address (0x...):');
-    if (address && address.startsWith('0x')) {
-      setPlayerAddress(address);
-      localStorage.setItem('playerAddress', address);
+  // Save game session when it changes
+  useEffect(() => {
+    if (gameSession) {
+      localStorage.setItem('gameSession', JSON.stringify(gameSession));
+    } else {
+      localStorage.removeItem('gameSession');
     }
+  }, [gameSession]);
+
+  const handleGameCreated = (gameId: string, playerAddress: string) => {
+    setGameSession({ gameId, playerAddress });
   };
 
-  const handleGameCreated = (gameId: string, address: string) => {
-    setGameSession({ gameId, playerAddress: address });
-  };
-
-  const handleGameJoined = (gameId: string, address: string) => {
-    setGameSession({ gameId, playerAddress: address });
+  const handleGameJoined = (gameId: string, playerAddress: string) => {
+    setGameSession({ gameId, playerAddress });
   };
 
   return (
@@ -39,14 +40,12 @@ function App() {
         <Route
           path="/"
           element={
-            gameSession ? (
+            gameSession && isConnected && address ? (
               <Navigate to={`/game/${gameSession.gameId}`} replace />
             ) : (
               <LandingPage
                 onGameCreated={handleGameCreated}
                 onGameJoined={handleGameJoined}
-                playerAddress={playerAddress}
-                onConnectWallet={handleConnectWallet}
               />
             )
           }
@@ -54,10 +53,10 @@ function App() {
         <Route
           path="/game/:gameId"
           element={
-            gameSession ? (
+            gameSession && isConnected && address ? (
               <GameTable 
                 gameId={gameSession.gameId} 
-                playerAddress={gameSession.playerAddress} 
+                playerAddress={address} 
               />
             ) : (
               <Navigate to="/" replace />

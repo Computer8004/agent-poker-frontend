@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { CreateGameForm } from '@/components/CreateGameForm';
 import { JoinGameForm } from '@/components/JoinGameForm';
+import { Faucet } from '@/components/Faucet';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, UserPlus, LogIn, Sparkles, Wallet } from 'lucide-react';
+import { Shield, UserPlus, LogIn, Sparkles } from 'lucide-react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 interface LandingPageProps {
   onGameCreated: (gameId: string, playerAddress: string) => void;
   onGameJoined: (gameId: string, playerAddress: string) => void;
-  playerAddress: string;
-  onConnectWallet: () => void;
 }
 
-export function LandingPage({ onGameCreated, onGameJoined, playerAddress, onConnectWallet }: LandingPageProps) {
+export function LandingPage({ onGameCreated, onGameJoined }: LandingPageProps) {
   const [mode, setMode] = useState<'landing' | 'create' | 'join'>('landing');
+  const { address, isConnected } = useAccount();
 
-  if (!playerAddress) {
+  if (!isConnected || !address) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
@@ -36,21 +38,25 @@ export function LandingPage({ onGameCreated, onGameJoined, playerAddress, onConn
             <p className="text-xl text-muted-foreground mb-2">
               High-Stakes Intelligence Operations
             </p>
+            
+            <div className="flex items-center justify-center gap-2 text-sm text-primary/70">
+              <Sparkles className="w-4 h-4" />
+              <span>On Base Mainnet</span>
+              <Sparkles className="w-4 h-4" />
+            </div>
           </div>
 
           <Card className="agent-card border-primary/20">
             <CardContent className="p-6">
-              <Button
-                size="lg"
-                onClick={onConnectWallet}
-                className="w-full h-20 flex flex-col items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 agent-glow"
-              >
-                <Wallet className="w-6 h-6" />
-                <div className="text-left">
-                  <div className="font-semibold">Connect Wallet</div>
-                  <div className="text-xs opacity-80">Required to play</div>
-                </div>
-              </Button>
+              <div className="flex justify-center">
+                <ConnectButton 
+                  label="Connect Wallet"
+                  showBalance={false}
+                />
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground text-center">
+                Connect your wallet to play Agent Poker
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -69,7 +75,7 @@ export function LandingPage({ onGameCreated, onGameJoined, playerAddress, onConn
           >
             ← Back
           </Button>
-          <CreateGameForm onGameCreated={onGameCreated} playerAddress={playerAddress} />
+          <CreateGameForm onGameCreated={onGameCreated} playerAddress={address} />
         </div>
       </div>
     );
@@ -86,7 +92,7 @@ export function LandingPage({ onGameCreated, onGameJoined, playerAddress, onConn
           >
             ← Back
           </Button>
-          <JoinGameForm onGameJoined={onGameJoined} playerAddress={playerAddress} />
+          <JoinGameForm onGameJoined={onGameJoined} playerAddress={address} />
         </div>
       </div>
     );
@@ -113,14 +119,12 @@ export function LandingPage({ onGameCreated, onGameJoined, playerAddress, onConn
             High-Stakes Intelligence Operations
           </p>
           
-          <div className="flex items-center justify-center gap-2 text-sm text-primary/70">
-            <Sparkles className="w-4 h-4" />
-            <span>Connected: {playerAddress.slice(0, 6)}...{playerAddress.slice(-4)}</span>
-            <Sparkles className="w-4 h-4" />
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <ConnectButton showBalance={true} />
           </div>
         </div>
 
-        <Card className="agent-card border-primary/20">
+        <Card className="agent-card border-primary/20 mb-4">
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
@@ -150,6 +154,8 @@ export function LandingPage({ onGameCreated, onGameJoined, playerAddress, onConn
             </div>
           </CardContent>
         </Card>
+
+        <Faucet />
       </div>
     </div>
   );
